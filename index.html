@@ -1,0 +1,1536 @@
+<x-artifact type="html" name="nacf-ars-full-fc-calculator-v2" title="NACF ARS Complete FC Labor Planning Calculator - Updated FPP">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NACF ARS Complete FC Labor Planning Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 24px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            color: #1a202c;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 1rem;
+        }
+
+        .interactive-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        /* Tab Navigation */
+        .tab-navigation {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #e2e8f0;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            border: none;
+            background: transparent;
+            color: #64748b;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -3px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: #667eea;
+            background: #f8fafc;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: #f8fafc;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #2d3748;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        .mode-toggle {
+            display: flex;
+            background: #e2e8f0;
+            border-radius: 8px;
+            padding: 4px;
+            margin-left: auto;
+        }
+
+        .mode-btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: transparent;
+            color: #64748b;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Assumptions Panel */
+        .assumptions-panel {
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            border: 3px solid #6366f1;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .assumptions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            margin-bottom: 16px;
+        }
+
+        .assumptions-header h3 {
+            color: #3730a3;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .collapse-icon {
+            font-size: 1.5rem;
+            color: #6366f1;
+            transition: transform 0.3s ease;
+        }
+
+        .collapse-icon.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .assumptions-content {
+            display: grid;
+            gap: 16px;
+        }
+
+        .assumptions-content.hidden {
+            display: none;
+        }
+
+        .assumption-card {
+            background: white;
+            border: 2px solid #818cf8;
+            border-radius: 10px;
+            padding: 16px;
+        }
+
+        .assumption-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #3730a3;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .assumption-description {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .assumption-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+        }
+
+        .assumption-input-group {
+            background: #f8fafc;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+        }
+
+        .assumption-input-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 4px;
+        }
+
+        .assumption-input-group input,
+        .assumption-input-group select {
+            width: 100%;
+            padding: 6px;
+            border: 2px solid #c7d2fe;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .assumption-input-group input:focus,
+        .assumption-input-group select:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .info-badge {
+            display: inline-block;
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        /* Flow Path Panel */
+        .flow-path-panel {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .flow-path-panel h3 {
+            color: #92400e;
+            margin-bottom: 16px;
+            font-size: 1.25rem;
+        }
+
+        .flow-path-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .flow-path-item {
+            background: #fffbeb;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #fbbf24;
+        }
+
+        .flow-path-item label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: #92400e;
+            margin-bottom: 4px;
+        }
+
+        .flow-path-item input {
+            width: 100%;
+            padding: 6px;
+            border: 2px solid #fbbf24;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .flow-path-item input:focus {
+            outline: none;
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        }
+
+        /* Input Panel */
+        .input-panel {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border: 2px solid #3b82f6;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .input-panel h3 {
+            color: #1e40af;
+            margin-bottom: 16px;
+            font-size: 1.25rem;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .input-group {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #3b82f6;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 6px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #60a5fa;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Results Panel */
+        .results-panel {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 2px solid #3b82f6;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .results-panel h3 {
+            color: #1e40af;
+            margin-bottom: 16px;
+            font-size: 1.25rem;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .result-item {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #bfdbfe;
+            text-align: center;
+        }
+
+        .result-label {
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .result-value {
+            font-size: 32px;
+            color: #1e40af;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .result-unit {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        /* HC Distribution Table */
+        .hc-distribution-panel {
+            background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+            border: 2px solid #a855f7;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .hc-distribution-panel h3 {
+            color: #6b21a8;
+            margin-bottom: 16px;
+            font-size: 1.25rem;
+        }
+
+        .hc-table {
+            width: 100%;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .hc-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .hc-table th {
+            background: #a855f7;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .hc-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e9d5ff;
+            font-size: 13px;
+        }
+
+        .hc-table tr:hover {
+            background: #faf5ff;
+        }
+
+        .hc-table .total-row {
+            background: #f3e8ff;
+            font-weight: 700;
+            border-top: 2px solid #a855f7;
+        }
+
+        .gap-indicator {
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 18px;
+            margin-top: 16px;
+        }
+
+        .gap-positive {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #92400e;
+            border: 2px solid #f59e0b;
+        }
+
+        .gap-negative {
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
+            color: #991b1b;
+            border: 2px solid #ef4444;
+        }
+
+        .gap-balanced {
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+            color: #065f46;
+            border: 2px solid #10b981;
+        }
+
+        @media (max-width: 768px) {
+            .input-grid, .results-grid, .assumption-inputs, .flow-path-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .mode-toggle {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .mode-btn {
+                flex: 1;
+            }
+
+            .tab-navigation {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏭 NACF ARS Complete FC Labor Planning Calculator</h1>
+            <p>Amazon Robotics Sortable - Inbound, Outbound & Full FC Planning</p>
+            <span class="interactive-badge">💰 COMPLETE FC CALCULATOR</span>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-success" onclick="calculate()">
+                <span>⚡</span> Calculate All
+            </button>
+            <button class="btn btn-secondary" onclick="resetValues()">
+                <span>🔄</span> Reset All
+            </button>
+            <div class="mode-toggle">
+                <button class="mode-btn active" id="weekBtn" onclick="setMode('week')">
+                    📅 Week (40 hrs)
+                </button>
+                <button class="mode-btn" id="shiftBtn" onclick="setMode('shift')">
+                    ⏰ Shift (12 hrs)
+                </button>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+            <button class="tab-btn active" onclick="switchTab('inbound')">📥 Inbound</button>
+            <button class="tab-btn" onclick="switchTab('outbound')">📤 Outbound</button>
+            <button class="tab-btn" onclick="switchTab('fc')">🏢 Entire FC</button>
+        </div>
+
+        <!-- INBOUND TAB -->
+        <div id="inbound-tab" class="tab-content active">
+            <!-- Assumptions Panel (Shared) -->
+            <div class="assumptions-panel">
+                <div class="assumptions-header" onclick="toggleAssumptions()">
+                    <h3>⚙️ Planning Assumptions <span class="info-badge">CONFIGURE FIRST</span></h3>
+                    <span class="collapse-icon" id="collapseIcon">▼</span>
+                </div>
+                <div class="assumptions-content" id="assumptionsContent">
+                    
+                    <!-- ATTRITION -->
+                    <div class="assumption-card">
+                        <div class="assumption-title">
+                            📉 ATTRITION
+                            <span class="info-badge">ML + HR Validated</span>
+                        </div>
+                        <div class="assumption-description">
+                            <strong>What:</strong> % of associates who resign/terminate weekly<br>
+                            <strong>Impact:</strong> Reduces effective headcount available for scheduling
+                        </div>
+                        <div class="assumption-inputs">
+                            <div class="assumption-input-group">
+                                <label>Blue Badge Attrition (%)</label>
+                                <input type="number" id="attrition-blue" value="3" step="0.5" min="0" max="100" oninput="calculate()">
+                            </div>
+                            <div class="assumption-input-group">
+                                <label>Seasonal Attrition (%)</label>
+                                <input type="number" id="attrition-seasonal" value="8" step="0.5" min="0" max="100" oninput="calculate()">
+                            </div>
+                            <div class="assumption-input-group">
+                                <label>Workforce Mix</label>
+                                <select id="attrition-mix" onchange="calculate()">
+                                    <option value="blue">100% Blue Badge</option>
+                                    <option value="mixed" selected>70% Blue / 30% Seasonal</option>
+                                    <option value="seasonal">50% Blue / 50% Seasonal</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ATTENDANCE -->
+                    <div class="assumption-card">
+                        <div class="assumption-title">
+                            📅 ATTENDANCE
+                            <span class="info-badge">Day/Shift Patterns</span>
+                        </div>
+                        <div class="assumption-description">
+                            <strong>What:</strong> % of associates attending scheduled shifts<br>
+                            <strong>Impact:</strong> Determines actual available workforce for production
+                        </div>
+                        <div class="assumption-inputs">
+                            <div class="assumption-input-group">
+                                <label>Weekday Attendance (%)</label>
+                                <input type="number" id="attendance-weekday" value="95" step="1" min="0" max="100" oninput="calculate()">
+                            </div>
+                            <div class="assumption-input-group">
+                                <label>Weekend Attendance (%)</label>
+                                <input type="number" id="attendance-weekend" value="92" step="1" min="0" max="100" oninput="calculate()">
+                            </div>
+                            <div class="assumption-input-group">
+                                <label>Shift Pattern</label>
+                                <select id="attendance-pattern" onchange="calculate()">
+                                    <option value="weekday" selected>Weekday Heavy</option>
+                                    <option value="balanced">Balanced Week</option>
+                                    <option value="weekend">Weekend Heavy</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RATES -->
+                    <div class="assumption-card">
+                        <div class="assumption-title">
+                            ⚡ RATES (PRODUCTIVITY)
+                            <span class="info-badge">Units per Hour</span>
+                        </div>
+                        <div class="assumption-description">
+                            <strong>What:</strong> Units per hour by process path<br>
+                            <strong>Impact:</strong> Determines volume processing capability
+                        </div>
+                        <div class="assumption-inputs">
+                            <div class="assumption-input-group">
+                                <label>Undiluted Rate (UPH)</label>
+                                <input type="number" id="rate-undiluted" value="55" step="1" min="0" oninput="calculate()">
+                            </div>
+                            <div class="assumption-input-group">
+                                <label>Diluted Rate (UPH)</label>
+                                <input type="number" id="rate-diluted" value="45" step="1" min="0" oninput="calculate()">
+                            </div>
+                            <div class="assumption-input-group">
+                                <label>Rate Type to Use</label>
+                                <select id="rate-type" onchange="calculate()">
+                                    <option value="undiluted">Undiluted (Veterans)</option>
+                                    <option value="diluted" selected>Diluted (With New Hires)</option>
+                                    <option value="average">Average Mix</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- UPB -->
+                    <div class="assumption-card">
+                        <div class="assumption-title">
+                            📦 UNITS PER BUNDLE (UPB)
+                            <span class="info-badge">Throughput Factor</span>
+                        </div>
+                        <div class="assumption-description">
+                            <strong>What:</strong> Average units processed together<br>
+                            <strong>Impact:</strong> Affects throughput calculations
+                        </div>
+                        <div class="assumption-inputs">
+                            <div class="assumption-input-group">
+                                <label>Peak Season UPB</label>
+                                <input type="number" id="upb-peak" value="1.8" step="0.1" min="1" oninput="calculate()">
+                            </div>
+                            <div class="assumption-input-group">
+                                <label>Non-Peak UPB</label>
+                                <input type="number" id="upb-nonpeak" value="1.3" step="0.1" min="1" oninput="calculate()">
+                            </div>
+                            <div class="assumption-input-group">
+                                <label>Current Season</label>
+                                <select id="upb-season" onchange="calculate()">
+                                    <option value="nonpeak" selected>Non-Peak</option>
+                                    <option value="peak">Peak Season</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Inbound Flow Paths -->
+            <div class="flow-path-panel">
+                <h3>📥 Inbound Flow Path Percentages (FPP)</h3>
+                <div class="flow-path-grid" id="ib-flow-paths">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+
+            <!-- Inbound Inputs -->
+            <div class="input-panel">
+                <h3>📝 Inbound Parameters</h3>
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label>IB Demand (Units/<span class="period-label">Week</span>)</label>
+                        <input type="number" id="ib-demand" value="10000" step="100" oninput="calculate()">
+                    </div>
+                    <div class="input-group">
+                        <label>IB Roster (Headcount)</label>
+                        <input type="number" id="ib-roster" value="100" step="1" oninput="calculate()">
+                    </div>
+                    <div class="input-group">
+                        <label>Base Hourly Pay ($/hr)</label>
+                        <input type="number" id="base-pay" value="18" step="0.50" oninput="calculate()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inbound Results -->
+            <div class="results-panel">
+                <h3>📊 Inbound Calculated Outputs</h3>
+                <div class="results-grid">
+                    <div class="result-item">
+                        <div class="result-label">IB Post-Attrition HC</div>
+                        <div class="result-value" id="ib-headcount">0</div>
+                        <div class="result-unit">people</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">IB Show Hours</div>
+                        <div class="result-value" id="ib-show-hours">0</div>
+                        <div class="result-unit">hours/<span class="period-label">week</span></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">IB Capacity</div>
+                        <div class="result-value" id="ib-capacity">0</div>
+                        <div class="result-unit">units/<span class="period-label">week</span></div>
+                    </div>
+                </div>
+                <div id="ib-gap-indicator" class="gap-indicator gap-balanced">
+                    ⚖️ Calculating...
+                </div>
+            </div>
+
+            <!-- Inbound HC Distribution -->
+            <div class="hc-distribution-panel">
+                <h3>👥 Inbound Headcount Distribution by Flow Path</h3>
+                <div class="hc-table">
+                    <table id="ib-hc-table">
+                        <thead>
+                            <tr>
+                                <th>Flow Path</th>
+                                <th>FPP %</th>
+                                <th>Headcount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ib-hc-tbody">
+                            <!-- Dynamically populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+		        <!-- RESULTS PANEL -->
+        <div class="results-panel">
+            <h3>📊 Calculated Outputs</h3>
+            <div class="results-grid">
+                <div class="result-item">
+                    <div class="result-label">Effective Attrition Rate</div>
+                    <div class="result-value" id="calc-attrition-rate">0%</div>
+                    <div class="result-unit">blended rate</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Effective Attendance Rate</div>
+                    <div class="result-value" id="calc-attendance-rate">0%</div>
+                    <div class="result-unit">blended rate</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Effective Rate (UPH)</div>
+                    <div class="result-value" id="calc-effective-rate">0</div>
+                    <div class="result-unit">with UPB factor</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Post-Attrition Headcount</div>
+                    <div class="result-value" id="calc-headcount">0</div>
+                    <div class="result-unit">people</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Show Hours (<span id="showHoursPeriod">Week</span>)</div>
+                    <div class="result-value" id="calc-show-hours">0</div>
+                    <div class="result-unit">hours/<span id="showHoursPeriod2">week</span></div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Processing Capacity</div>
+                    <div class="result-value" id="calc-capacity">0</div>
+                    <div class="result-unit">units/<span id="capacityPeriod">week</span></div>
+                </div>
+            </div>
+            <div id="gap-indicator" class="gap-indicator gap-balanced">
+                ⚖️ Calculating...
+            </div>
+        </div>
+
+        <!-- COST SUMMARY PANEL -->
+        <div class="cost-summary-panel">
+            <h3>💰 Cost Analysis by Strategy</h3>
+            <div class="cost-grid" id="costGrid">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+
+        <!-- RECOMMENDATIONS PANEL -->
+        <div class="recommendations-panel">
+            <h3>💡 Action Recommendations with Cost Impact</h3>
+            <div class="recommendation-grid" id="recommendationGrid">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </div>
+
+        <!-- OUTBOUND TAB -->
+        <div id="outbound-tab" class="tab-content">
+            <!-- Outbound Flow Paths -->
+            <div class="flow-path-panel">
+                <h3>📤 Outbound Flow Path Percentages (FPP)</h3>
+                <div class="flow-path-grid" id="ob-flow-paths">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+
+            <!-- Outbound Inputs -->
+            <div class="input-panel">
+                <h3>📝 Outbound Parameters</h3>
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label>OB Demand (Units/<span class="period-label">Week</span>)</label>
+                        <input type="number" id="ob-demand" value="10000" step="100" oninput="calculate()">
+                    </div>
+                    <div class="input-group">
+                        <label>OB Roster (Headcount)</label>
+                        <input type="number" id="ob-roster" value="100" step="1" oninput="calculate()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Outbound Results -->
+            <div class="results-panel">
+                <h3>📊 Outbound Calculated Outputs</h3>
+                <div class="results-grid">
+                    <div class="result-item">
+                        <div class="result-label">OB Post-Attrition HC</div>
+                        <div class="result-value" id="ob-headcount">0</div>
+                        <div class="result-unit">people</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">OB Show Hours</div>
+                        <div class="result-value" id="ob-show-hours">0</div>
+                        <div class="result-unit">hours/<span class="period-label">week</span></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">OB Capacity</div>
+                        <div class="result-value" id="ob-capacity">0</div>
+                        <div class="result-unit">units/<span class="period-label">week</span></div>
+                    </div>
+                </div>
+                <div id="ob-gap-indicator" class="gap-indicator gap-balanced">
+                    ⚖️ Calculating...
+                </div>
+            </div>
+
+            <!-- Outbound HC Distribution -->
+            <div class="hc-distribution-panel">
+                <h3>👥 Outbound Headcount Distribution by Flow Path</h3>
+                <div class="hc-table">
+                    <table id="ob-hc-table">
+                        <thead>
+                            <tr>
+                                <th>Flow Path</th>
+                                <th>FPP %</th>
+                                <th>Headcount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ob-hc-tbody">
+                            <!-- Dynamically populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+		        <!-- RESULTS PANEL -->
+        <div class="results-panel">
+            <h3>📊 Calculated Outputs</h3>
+            <div class="results-grid">
+                <div class="result-item">
+                    <div class="result-label">Effective Attrition Rate</div>
+                    <div class="result-value" id="calc-attrition-rate">0%</div>
+                    <div class="result-unit">blended rate</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Effective Attendance Rate</div>
+                    <div class="result-value" id="calc-attendance-rate">0%</div>
+                    <div class="result-unit">blended rate</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Effective Rate (UPH)</div>
+                    <div class="result-value" id="calc-effective-rate">0</div>
+                    <div class="result-unit">with UPB factor</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Post-Attrition Headcount</div>
+                    <div class="result-value" id="calc-headcount">0</div>
+                    <div class="result-unit">people</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Show Hours (<span id="showHoursPeriod">Week</span>)</div>
+                    <div class="result-value" id="calc-show-hours">0</div>
+                    <div class="result-unit">hours/<span id="showHoursPeriod2">week</span></div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Processing Capacity</div>
+                    <div class="result-value" id="calc-capacity">0</div>
+                    <div class="result-unit">units/<span id="capacityPeriod">week</span></div>
+                </div>
+            </div>
+            <div id="gap-indicator" class="gap-indicator gap-balanced">
+                ⚖️ Calculating...
+            </div>
+        </div>
+
+        <!-- COST SUMMARY PANEL -->
+        <div class="cost-summary-panel">
+            <h3>💰 Cost Analysis by Strategy</h3>
+            <div class="cost-grid" id="costGrid">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+
+        <!-- RECOMMENDATIONS PANEL -->
+        <div class="recommendations-panel">
+            <h3>💡 Action Recommendations with Cost Impact</h3>
+            <div class="recommendation-grid" id="recommendationGrid">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </div>
+
+        <!-- ENTIRE FC TAB -->
+        <div id="fc-tab" class="tab-content">
+            <!-- FC Summary -->
+            <div class="results-panel">
+                <h3>🏢 Entire FC Summary</h3>
+                <div class="results-grid">
+                    <div class="result-item">
+                        <div class="result-label">Total FC Headcount</div>
+                        <div class="result-value" id="fc-total-headcount">0</div>
+                        <div class="result-unit">people</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Total Show Hours</div>
+                        <div class="result-value" id="fc-total-hours">0</div>
+                        <div class="result-unit">hours/<span class="period-label">week</span></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Total FC Capacity</div>
+                        <div class="result-value" id="fc-total-capacity">0</div>
+                        <div class="result-unit">units/<span class="period-label">week</span></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Total FC Demand</div>
+                        <div class="result-value" id="fc-total-demand">0</div>
+                        <div class="result-unit">units/<span class="period-label">week</span></div>
+                    </div>
+                </div>
+                <div id="fc-gap-indicator" class="gap-indicator gap-balanced">
+                    ⚖️ Calculating...
+                </div>
+            </div>
+
+            <!-- FC Breakdown -->
+            <div class="hc-distribution-panel">
+                <h3>📊 FC Breakdown: Inbound vs Outbound</h3>
+                <div class="hc-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Area</th>
+                                <th>Headcount</th>
+                                <th>Show Hours</th>
+                                <th>Capacity</th>
+                                <th>Demand</th>
+                                <th>Gap</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fc-breakdown-tbody">
+                            <!-- Dynamically populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Combined HC Distribution -->
+            <div class="hc-distribution-panel">
+                <h3>👥 Complete FC Headcount Distribution</h3>
+                <div class="hc-table">
+                    <table id="fc-hc-table">
+                        <thead>
+                            <tr>
+                                <th>Area</th>
+                                <th>Flow Path</th>
+                                <th>FPP %</th>
+                                <th>Headcount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fc-hc-tbody">
+                            <!-- Dynamically populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Inbound Flow Paths (removed paths with "Total")
+        const IB_FLOW_PATHS = [
+            'Transfer In Decant',
+            'Each Transfer In - Small',
+            'Each Transfer In - Medium',
+            'Each Transfer In - Large',
+            'Transfer In Support',
+            'Cubiscan',
+            'Prep Support',
+            'Each Stow To Prime - Small',
+            'Each Stow To Prime - Medium',
+            'Each Stow To Prime - Large',
+            'Stow to Prime Support',
+            'RSR Support',
+            'IB Lead/PA',
+            'IB Problem Solve'
+        ];
+
+        // Outbound Flow Paths (removed paths with "Total")
+        const OB_FLOW_PATHS = [
+            'Pick - Small',
+            'Pick - Medium',
+            'Pick - Large',
+            'Pick Support',
+            'Flow Sort - Small',
+            'Flow Sort - Medium',
+            'Flow Sort - Large',
+            'Sort Support',
+            'Chutings - Small',
+            'Chutings - Medium',
+            'Chutings - Large',
+            'Auto Slam',
+            'Pack - Autobox',
+            'Pack - Lev/Autofold',
+            'Pack Singles - Small',
+            'Pack Singles - Medium',
+            'Pack Singles - Large',
+            'Pack Support',
+            'Giftwrap',
+            'OB Lead/PA',
+            'OB Problem Solve',
+            'Induct',
+            'Fluid Load',
+            'Auto Containerize',
+            'Container Build',
+            'Container Move',
+            'Container Load',
+            'Ship Problem Solve',
+            'Ship Dock Lead/PA',
+            'Ship Dock Support',
+            'Ship Dock'
+        ];
+
+        const state = {
+            mode: 'week',
+            currentTab: 'inbound',
+            assumptions: {
+                attritionBlue: 3,
+                attritionSeasonal: 8,
+                attritionMix: 'mixed',
+                attendanceWeekday: 95,
+                attendanceWeekend: 92,
+                attendancePattern: 'weekday',
+                rateUndiluted: 55,
+                rateDiluted: 45,
+                rateType: 'diluted',
+                upbPeak: 1.8,
+                upbNonpeak: 1.3,
+                upbSeason: 'nonpeak'
+            },
+            inbound: {
+                demand: 10000,
+                roster: 100,
+                flowPaths: {},
+                headcount: 0,
+                showHours: 0,
+                capacity: 0,
+                gap: 0,
+                hcDistribution: {}
+            },
+            outbound: {
+                demand: 10000,
+                roster: 100,
+                flowPaths: {},
+                headcount: 0,
+                showHours: 0,
+                capacity: 0,
+                gap: 0,
+                hcDistribution: {}
+            },
+            basePay: 18,
+            calculated: {
+                effectiveAttrition: 0,
+                effectiveAttendance: 0,
+                effectiveRate: 0,
+                upbFactor: 0
+            }
+        };
+
+        window.addEventListener('load', function() {
+            initializeFlowPaths();
+            calculate();
+        });
+
+        function initializeFlowPaths() {
+            // Initialize IB flow paths
+            const ibContainer = document.getElementById('ib-flow-paths');
+            const defaultIBPercent = (100 / IB_FLOW_PATHS.length).toFixed(2);
+            
+            IB_FLOW_PATHS.forEach((path, index) => {
+                const div = document.createElement('div');
+                div.className = 'flow-path-item';
+                div.innerHTML = `
+                    <label>${path}</label>
+                    <input type="number" id="ib-fpp-${index}" value="${defaultIBPercent}" step="0.1" min="0" max="100" oninput="calculate()">
+                `;
+                ibContainer.appendChild(div);
+                state.inbound.flowPaths[path] = parseFloat(defaultIBPercent);
+            });
+
+            // Initialize OB flow paths
+            const obContainer = document.getElementById('ob-flow-paths');
+            const defaultOBPercent = (100 / OB_FLOW_PATHS.length).toFixed(2);
+            
+            OB_FLOW_PATHS.forEach((path, index) => {
+                const div = document.createElement('div');
+                div.className = 'flow-path-item';
+                div.innerHTML = `
+                    <label>${path}</label>
+                    <input type="number" id="ob-fpp-${index}" value="${defaultOBPercent}" step="0.1" min="0" max="100" oninput="calculate()">
+                `;
+                obContainer.appendChild(div);
+                state.outbound.flowPaths[path] = parseFloat(defaultOBPercent);
+            });
+        }
+
+        function switchTab(tab) {
+            state.currentTab = tab;
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(`${tab}-tab`).classList.add('active');
+        }
+
+        function toggleAssumptions() {
+            const content = document.getElementById('assumptionsContent');
+            const icon = document.getElementById('collapseIcon');
+            content.classList.toggle('hidden');
+            icon.classList.toggle('collapsed');
+        }
+
+        function setMode(mode) {
+            state.mode = mode;
+            document.getElementById('weekBtn').classList.toggle('active', mode === 'week');
+            document.getElementById('shiftBtn').classList.toggle('active', mode === 'shift');
+            
+            const period = mode === 'week' ? 'week' : 'shift';
+            document.querySelectorAll('.period-label').forEach(el => el.textContent = period);
+            
+            calculate();
+        }
+
+        function getHoursPerPeriod() {
+            return state.mode === 'week' ? 40 : 12;
+        }
+
+        function calculate() {
+            // Get assumptions
+            state.assumptions.attritionBlue = parseFloat(document.getElementById('attrition-blue').value) || 0;
+            state.assumptions.attritionSeasonal = parseFloat(document.getElementById('attrition-seasonal').value) || 0;
+            state.assumptions.attritionMix = document.getElementById('attrition-mix').value;
+            state.assumptions.attendanceWeekday = parseFloat(document.getElementById('attendance-weekday').value) || 0;
+            state.assumptions.attendanceWeekend = parseFloat(document.getElementById('attendance-weekend').value) || 0;
+            state.assumptions.attendancePattern = document.getElementById('attendance-pattern').value;
+            state.assumptions.rateUndiluted = parseFloat(document.getElementById('rate-undiluted').value) || 0;
+            state.assumptions.rateDiluted = parseFloat(document.getElementById('rate-diluted').value) || 0;
+            state.assumptions.rateType = document.getElementById('rate-type').value;
+            state.assumptions.upbPeak = parseFloat(document.getElementById('upb-peak').value) || 0;
+            state.assumptions.upbNonpeak = parseFloat(document.getElementById('upb-nonpeak').value) || 0;
+            state.assumptions.upbSeason = document.getElementById('upb-season').value;
+
+            // Calculate effective rates
+            if (state.assumptions.attritionMix === 'blue') {
+                state.calculated.effectiveAttrition = state.assumptions.attritionBlue / 100;
+            } else if (state.assumptions.attritionMix === 'mixed') {
+                state.calculated.effectiveAttrition = (0.7 * state.assumptions.attritionBlue + 0.3 * state.assumptions.attritionSeasonal) / 100;
+            } else {
+                state.calculated.effectiveAttrition = (0.5 * state.assumptions.attritionBlue + 0.5 * state.assumptions.attritionSeasonal) / 100;
+            }
+
+            if (state.assumptions.attendancePattern === 'weekday') {
+                state.calculated.effectiveAttendance = (0.7 * state.assumptions.attendanceWeekday + 0.3 * state.assumptions.attendanceWeekend) / 100;
+            } else if (state.assumptions.attendancePattern === 'balanced') {
+                state.calculated.effectiveAttendance = (0.5 * state.assumptions.attendanceWeekday + 0.5 * state.assumptions.attendanceWeekend) / 100;
+            } else {
+                state.calculated.effectiveAttendance = (0.3 * state.assumptions.attendanceWeekday + 0.7 * state.assumptions.attendanceWeekend) / 100;
+            }
+
+            let baseRate;
+            if (state.assumptions.rateType === 'undiluted') {
+                baseRate = state.assumptions.rateUndiluted;
+            } else if (state.assumptions.rateType === 'diluted') {
+                baseRate = state.assumptions.rateDiluted;
+            } else {
+                baseRate = (state.assumptions.rateUndiluted + state.assumptions.rateDiluted) / 2;
+            }
+
+            state.calculated.upbFactor = state.assumptions.upbSeason === 'peak' ? state.assumptions.upbPeak : state.assumptions.upbNonpeak;
+            state.calculated.effectiveRate = baseRate * state.calculated.upbFactor;
+
+            const hoursPerPeriod = getHoursPerPeriod();
+
+            // Get inputs
+            state.inbound.demand = parseFloat(document.getElementById('ib-demand').value) || 0;
+            state.inbound.roster = parseFloat(document.getElementById('ib-roster').value) || 0;
+            state.outbound.demand = parseFloat(document.getElementById('ob-demand').value) || 0;
+            state.outbound.roster = parseFloat(document.getElementById('ob-roster').value) || 0;
+            state.basePay = parseFloat(document.getElementById('base-pay').value) || 0;
+
+            // Get IB flow paths
+            IB_FLOW_PATHS.forEach((path, index) => {
+                const input = document.getElementById(`ib-fpp-${index}`);
+                state.inbound.flowPaths[path] = parseFloat(input.value) || 0;
+            });
+
+            // Get OB flow paths
+            OB_FLOW_PATHS.forEach((path, index) => {
+                const input = document.getElementById(`ob-fpp-${index}`);
+                state.outbound.flowPaths[path] = parseFloat(input.value) || 0;
+            });
+
+            // Calculate IB
+            state.inbound.headcount = state.inbound.roster * (1 - state.calculated.effectiveAttrition);
+            state.inbound.showHours = state.inbound.headcount * hoursPerPeriod * state.calculated.effectiveAttendance;
+            state.inbound.capacity = state.calculated.effectiveRate * state.inbound.showHours;
+            state.inbound.gap = state.inbound.capacity - state.inbound.demand;
+
+            // Calculate IB HC distribution
+            IB_FLOW_PATHS.forEach(path => {
+                const percent = state.inbound.flowPaths[path] / 100;
+                state.inbound.hcDistribution[path] = state.inbound.headcount * percent;
+            });
+
+            // Calculate OB
+            state.outbound.headcount = state.outbound.roster * (1 - state.calculated.effectiveAttrition);
+            state.outbound.showHours = state.outbound.headcount * hoursPerPeriod * state.calculated.effectiveAttendance;
+            state.outbound.capacity = state.calculated.effectiveRate * state.outbound.showHours;
+            state.outbound.gap = state.outbound.capacity - state.outbound.demand;
+
+            // Calculate OB HC distribution
+            OB_FLOW_PATHS.forEach(path => {
+                const percent = state.outbound.flowPaths[path] / 100;
+                state.outbound.hcDistribution[path] = state.outbound.headcount * percent;
+            });
+
+            updateDisplays();
+        }
+
+        function updateDisplays() {
+            // Update IB displays
+            document.getElementById('ib-headcount').textContent = state.inbound.headcount.toFixed(1);
+            document.getElementById('ib-show-hours').textContent = state.inbound.showHours.toFixed(0);
+            document.getElementById('ib-capacity').textContent = state.inbound.capacity.toLocaleString();
+
+            updateGapIndicator('ib', state.inbound.gap, state.inbound.demand);
+
+            // Update IB HC table
+            updateHCTable('ib', IB_FLOW_PATHS, state.inbound.flowPaths, state.inbound.hcDistribution, state.inbound.headcount);
+
+            // Update OB displays
+            document.getElementById('ob-headcount').textContent = state.outbound.headcount.toFixed(1);
+            document.getElementById('ob-show-hours').textContent = state.outbound.showHours.toFixed(0);
+            document.getElementById('ob-capacity').textContent = state.outbound.capacity.toLocaleString();
+
+            updateGapIndicator('ob', state.outbound.gap, state.outbound.demand);
+
+            // Update OB HC table
+            updateHCTable('ob', OB_FLOW_PATHS, state.outbound.flowPaths, state.outbound.hcDistribution, state.outbound.headcount);
+
+            // Update FC displays
+            const fcTotalHC = state.inbound.headcount + state.outbound.headcount;
+            const fcTotalHours = state.inbound.showHours + state.outbound.showHours;
+            const fcTotalCapacity = state.inbound.capacity + state.outbound.capacity;
+            const fcTotalDemand = state.inbound.demand + state.outbound.demand;
+            const fcTotalGap = fcTotalCapacity - fcTotalDemand;
+
+            document.getElementById('fc-total-headcount').textContent = fcTotalHC.toFixed(1);
+            document.getElementById('fc-total-hours').textContent = fcTotalHours.toFixed(0);
+            document.getElementById('fc-total-capacity').textContent = fcTotalCapacity.toLocaleString();
+            document.getElementById('fc-total-demand').textContent = fcTotalDemand.toLocaleString();
+
+            updateGapIndicator('fc', fcTotalGap, fcTotalDemand);
+
+            // Update FC breakdown table
+            updateFCBreakdown();
+
+            // Update FC combined HC table
+            updateFCCombinedTable();
+        }
+
+        function updateGapIndicator(area, gap, demand) {
+            const indicator = document.getElementById(`${area}-gap-indicator`);
+            const gapPercent = (gap / demand) * 100;
+
+            if (Math.abs(gapPercent) < 5) {
+                indicator.className = 'gap-indicator gap-balanced';
+                indicator.innerHTML = `⚖️ Capacity Balanced<br><small>Gap: ${gap.toFixed(0)} units (${gapPercent.toFixed(1)}%)</small>`;
+            } else if (gapPercent > 0) {
+                indicator.className = 'gap-indicator gap-positive';
+                indicator.innerHTML = `📈 Excess Capacity<br><small>Surplus: ${gap.toFixed(0)} units (${gapPercent.toFixed(1)}%)</small>`;
+            } else {
+                indicator.className = 'gap-indicator gap-negative';
+                indicator.innerHTML = `📉 Capacity Shortage<br><small>Deficit: ${Math.abs(gap).toFixed(0)} units (${Math.abs(gapPercent).toFixed(1)}%)</small>`;
+            }
+        }
+
+        function updateHCTable(area, paths, flowPaths, hcDistribution, totalHC) {
+            const tbody = document.getElementById(`${area}-hc-tbody`);
+            tbody.innerHTML = '';
+
+            paths.forEach(path => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${path}</td>
+                    <td>${flowPaths[path].toFixed(2)}%</td>
+                    <td>${hcDistribution[path].toFixed(2)}</td>
+                `;
+            });
+
+            // Add total row
+            const totalRow = tbody.insertRow();
+            totalRow.className = 'total-row';
+            totalRow.innerHTML = `
+                <td><strong>TOTAL</strong></td>
+                <td><strong>100.00%</strong></td>
+                <td><strong>${totalHC.toFixed(2)}</strong></td>
+            `;
+        }
+
+        function updateFCBreakdown() {
+            const tbody = document.getElementById('fc-breakdown-tbody');
+            tbody.innerHTML = '';
+
+            // IB row
+            const ibRow = tbody.insertRow();
+            ibRow.innerHTML = `
+                <td><strong>Inbound</strong></td>
+                <td>${state.inbound.headcount.toFixed(1)}</td>
+                <td>${state.inbound.showHours.toFixed(0)}</td>
+                <td>${state.inbound.capacity.toLocaleString()}</td>
+                <td>${state.inbound.demand.toLocaleString()}</td>
+                <td>${state.inbound.gap.toFixed(0)}</td>
+            `;
+
+            // OB row
+            const obRow = tbody.insertRow();
+            obRow.innerHTML = `
+                <td><strong>Outbound</strong></td>
+                <td>${state.outbound.headcount.toFixed(1)}</td>
+                <td>${state.outbound.showHours.toFixed(0)}</td>
+                <td>${state.outbound.capacity.toLocaleString()}</td>
+                <td>${state.outbound.demand.toLocaleString()}</td>
+                <td>${state.outbound.gap.toFixed(0)}</td>
+            `;
+
+            // Total row
+            const totalRow = tbody.insertRow();
+            totalRow.className = 'total-row';
+            const fcTotalHC = state.inbound.headcount + state.outbound.headcount;
+            const fcTotalHours = state.inbound.showHours + state.outbound.showHours;
+            const fcTotalCapacity = state.inbound.capacity + state.outbound.capacity;
+            const fcTotalDemand = state.inbound.demand + state.outbound.demand;
+            const fcTotalGap = fcTotalCapacity - fcTotalDemand;
+
+            totalRow.innerHTML = `
+                <td><strong>TOTAL FC</strong></td>
+                <td><strong>${fcTotalHC.toFixed(1)}</strong></td>
+                <td><strong>${fcTotalHours.toFixed(0)}</strong></td>
+                <td><strong>${fcTotalCapacity.toLocaleString()}</strong></td>
+                <td><strong>${fcTotalDemand.toLocaleString()}</strong></td>
+                <td><strong>${fcTotalGap.toFixed(0)}</strong></td>
+            `;
+        }
+
+        function updateFCCombinedTable() {
+            const tbody = document.getElementById('fc-hc-tbody');
+            tbody.innerHTML = '';
+
+            // Add IB paths
+            IB_FLOW_PATHS.forEach(path => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td><strong>Inbound</strong></td>
+                    <td>${path}</td>
+                    <td>${state.inbound.flowPaths[path].toFixed(2)}%</td>
+                    <td>${state.inbound.hcDistribution[path].toFixed(2)}</td>
+                `;
+            });
+
+            // IB subtotal
+            const ibSubtotal = tbody.insertRow();
+            ibSubtotal.style.background = '#f3e8ff';
+            ibSubtotal.style.fontWeight = '600';
+            ibSubtotal.innerHTML = `
+                <td colspan="2"><strong>Inbound Subtotal</strong></td>
+                <td><strong>100.00%</strong></td>
+                <td><strong>${state.inbound.headcount.toFixed(2)}</strong></td>
+            `;
+
+            // Add OB paths
+            OB_FLOW_PATHS.forEach(path => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td><strong>Outbound</strong></td>
+                    <td>${path}</td>
+                    <td>${state.outbound.flowPaths[path].toFixed(2)}%</td>
+                    <td>${state.outbound.hcDistribution[path].toFixed(2)}</td>
+                `;
+            });
+
+            // OB subtotal
+            const obSubtotal = tbody.insertRow();
+            obSubtotal.style.background = '#f3e8ff';
+            obSubtotal.style.fontWeight = '600';
+            obSubtotal.innerHTML = `
+                <td colspan="2"><strong>Outbound Subtotal</strong></td>
+                <td><strong>100.00%</strong></td>
+                <td><strong>${state.outbound.headcount.toFixed(2)}</strong></td>
+            `;
+
+            // Grand total
+            const grandTotal = tbody.insertRow();
+            grandTotal.className = 'total-row';
+            const fcTotalHC = state.inbound.headcount + state.outbound.headcount;
+            grandTotal.innerHTML = `
+                <td colspan="2"><strong>ENTIRE FC TOTAL</strong></td>
+                <td><strong>-</strong></td>
+                <td><strong>${fcTotalHC.toFixed(2)}</strong></td>
+            `;
+        }
+
+        function resetValues() {
+            // Reset assumptions
+            document.getElementById('attrition-blue').value = 3;
+            document.getElementById('attrition-seasonal').value = 8;
+            document.getElementById('attrition-mix').value = 'mixed';
+            document.getElementById('attendance-weekday').value = 95;
+            document.getElementById('attendance-weekend').value = 92;
+            document.getElementById('attendance-pattern').value = 'weekday';
+            document.getElementById('rate-undiluted').value = 55;
+            document.getElementById('rate-diluted').value = 45;
+            document.getElementById('rate-type').value = 'diluted';
+            document.getElementById('upb-peak').value = 1.8;
+            document.getElementById('upb-nonpeak').value = 1.3;
+            document.getElementById('upb-season').value = 'nonpeak';
+            
+            // Reset inputs
+            document.getElementById('ib-demand').value = 10000;
+            document.getElementById('ib-roster').value = 100;
+            document.getElementById('ob-demand').value = 10000;
+            document.getElementById('ob-roster').value = 100;
+            document.getElementById('base-pay').value = 18;
+
+            // Reset flow paths
+            const defaultIBPercent = (100 / IB_FLOW_PATHS.length).toFixed(2);
+            IB_FLOW_PATHS.forEach((path, index) => {
+                document.getElementById(`ib-fpp-${index}`).value = defaultIBPercent;
+            });
+
+            const defaultOBPercent = (100 / OB_FLOW_PATHS.length).toFixed(2);
+            OB_FLOW_PATHS.forEach((path, index) => {
+                document.getElementById(`ob-fpp-${index}`).value = defaultOBPercent;
+            });
+            
+            calculate();
+        }
+    </script>
+</body>
+</html>
+</x-artifact>
